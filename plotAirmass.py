@@ -83,40 +83,59 @@ def main():
                 print("E: Celestial body not found.")
         else:
             if body != "":
-                # Set location of observation using astropy.units
-                location = EarthLocation(
-                    lat=41.3 * u.deg, lon=-74 * u.deg, height=390 * u.m)
+                # Get location coordinates from the user
+                print("Please enter the observation point location (latitude/longitude/height: )")
+                latitude = input("Lat: ")
+                longitude = input("Long: ")
+                height = input("Height(m): ")
 
-                # lat=41.3 * u.deg, lon=-74 * u.deg, height=390 * u.m
-
-                utcoffset = -4 * u.hour  # Eastern Daylight Time
-                time = Time('2012-7-12 23:00:00') - \
-                    utcoffset  # Set observation time
-
-                # Find coordinates of selected body as observed at set time
-                tonaltaz = body.transform_to(
-                    AltAz(obstime=time, location=location))
-                print(f"{bodyName}'s Altitude = {tonaltaz.alt:.6}")
-
-                midnight = Time('2012-7-13 00:00:00') - utcoffset
-                # linspace returns evenly spaced numbers over specified interval
-                delta_settime = np.linspace(9, 23, 100) * u.hour
-
-                choice = input(
-                    "Plot Body (1) | Plot Moon & Sun vs Body (2) | Quit (3): ")
+                # Convert location coordinates to floats
                 try:
-                    choice = int(choice)
+                    latitude = float(latitude)
+                    longitude = float(longitude)
+                    height = int(height)
                 except ValueError:
-                    print("Please enter a valid option.")
+                    print("Latitude/Longitude/Height values not correct.")
                 else:
-                    if choice == 1:
-                        pltBody(body, midnight, location, delta_settime)
-                    elif choice == 2:
-                        pltSMB(body, bodyName, midnight,
-                               location, delta_settime)
+                    # Set location of observation using astropy.units
+                    location = EarthLocation(
+                        lat=latitude * u.deg, lon=-longitude * u.deg, height=height * u.m)
+
+                    # lat=41.3 * u.deg, lon=-74 * u.deg, height=390 * u.m
+
+                    utcoffset = -4 * u.hour  # Eastern Daylight Time
+
+                    # User input for date and time
+                    date = input("Enter date (YYY-M-D): ")
+                    time = input("Enter time in EDT (HH:MM:SS): ")
+
+                    datetime = Time(date + " " + time) - \
+                        utcoffset  # Set observation time
+
+                    # Find coordinates of selected body as observed at set time
+                    tonaltaz = body.transform_to(
+                        AltAz(obstime=datetime, location=location))
+                    print(f"{bodyName}'s Altitude = {tonaltaz.alt:.6}")
+
+                    midnight = Time(date + ' 00:00:00') - utcoffset
+                    # linspace returns evenly spaced numbers over specified interval
+                    delta_settime = np.linspace(9, 23, 100) * u.hour
+
+                    choice = input(
+                        "Plot Body (1) | Plot Moon & Sun vs Body (2) | Quit (3): ")
+                    try:
+                        choice = int(choice)
+                    except ValueError:
+                        print("Please enter a valid option.")
                     else:
-                        if choice != 3:
-                            print("Please enter a valid option.")
+                        if choice == 1:
+                            pltBody(body, midnight, location, delta_settime)
+                        elif choice == 2:
+                            pltSMB(body, bodyName, midnight,
+                                   location, delta_settime)
+                        else:
+                            if choice != 3:
+                                print("Please enter a valid option.")
 
 
 # Call main function
